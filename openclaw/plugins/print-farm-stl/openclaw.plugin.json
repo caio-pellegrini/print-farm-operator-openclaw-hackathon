@@ -1,0 +1,117 @@
+{
+  "id": "print-farm-stl",
+  "name": "Print Farm STL Analysis",
+  "description": "Analyze STL files from a restricted local jobs directory.",
+  "version": "0.1.0",
+  "configSchema": {
+    "type": "object",
+    "required": [
+      "jobsDirectory",
+      "analyzerScript",
+      "persistenceScript",
+      "productionEstimateScript",
+      "quoteEngine",
+      "databasePath",
+      "bridgeScript",
+      "identityKeyFile",
+      "uploadSpool",
+      "pendingIntakeRoot",
+      "openclawMediaRoot",
+      "privateJobsRoot",
+      "identityAudience"
+    ],
+    "properties": {
+      "jobsDirectory": {
+        "type": "string",
+        "description": "Absolute path to the trusted STL jobs directory."
+      },
+      "analyzerScript": {
+        "type": "string",
+        "description": "Absolute path to experiments/stl-analysis/analyze_stl.py."
+      },
+      "persistenceScript": {
+        "type": "string",
+        "description": "Absolute path to experiments/stl-analysis/persistence.py."
+      },
+      "productionEstimateScript": {
+        "type": "string",
+        "description": "Absolute path to experiments/slicing/openclaw_production_estimate.py."
+      },
+      "quoteEngine": {
+        "type": "string",
+        "description": "Absolute path to experiments/quote-engine/quote.py."
+      },
+      "databasePath": {
+        "type": "string",
+        "description": "Absolute path to the project-local SQLite database."
+      },
+      "bridgeScript": {
+        "type": "string",
+        "description": "Absolute path to the trusted Stage 5 channel bridge."
+      },
+      "localToolsScript": {
+        "type": "string",
+        "description": "Absolute path to the authenticated local onboarding and production adapter."
+      },
+      "identityKeyFile": {
+        "type": "string",
+        "description": "Private deployment identity signing key, mode 0600."
+      },
+      "uploadSpool": {
+        "type": "string",
+        "description": "Private Stage 5 upload spool directory."
+      },
+      "pendingIntakeRoot": {
+        "type": "string",
+        "description": "Private persistent pending-intake spool directory."
+      },
+      "openclawMediaRoot": {
+        "type": "string",
+        "description": "Absolute private root for OpenClaw's staged inbound media files."
+      },
+      "openclawCli": {
+        "type": "string",
+        "description": "Absolute OpenClaw CLI path used only for the local channel readiness probe."
+      },
+      "privateJobsRoot": {
+        "type": "string",
+        "description": "Private per-job file root."
+      },
+      "identityAudience": {
+        "type": "string",
+        "description": "Audience expected by the local farm application."
+      },
+      "pythonExecutable": {
+        "type": "string",
+        "description": "Python executable path or PATH-resolved name; defaults to python3."
+      },
+      "dockerExecutable": {
+        "type": "string",
+        "description": "Docker executable path or PATH-resolved name; defaults to docker."
+      }
+    },
+    "additionalProperties": false
+  },
+  "activation": {
+    "onStartup": true
+  },
+  "contracts": {
+    "tools": [
+      "analyze_stl",
+      "get_latest_stl_analysis",
+      "slice_stl",
+      "get_latest_production_estimate",
+      "farm_get_pending_intake_status",
+      "farm_send_intake_confirmation",
+      "farm_resolve_pending_intake",
+      "farm_read_own_job",
+      "farm_onboarding",
+      "get_farm_configuration",
+      "list_ready_jobs",
+      "inspect_production_job",
+      "assign_printer",
+      "start_job",
+      "finish_job"
+    ]
+  }
+}

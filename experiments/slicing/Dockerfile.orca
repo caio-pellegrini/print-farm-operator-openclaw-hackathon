@@ -1,0 +1,19 @@
+FROM ubuntu:24.04@sha256:008173c23f95b170204355c12626cb5a965d779a7e1283b09e9cffbb1bf33ca3
+ARG ORCA_VERSION=2.4.2
+ARG ORCA_APPIMAGE_SHA256=d12fb8c8eac1aecd2dfb6377acd48f994f8fa439ed5292fa532dd82880f029fd
+RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+    ca-certificates curl libopengl0 libglu1-mesa libgtk-3-0 libwebkit2gtk-4.1-0 \
+    libsm6 libice6 libx11-6 libxext6 libxkbcommon0 libegl1 libglx0 \
+    libwayland-egl1 libgstreamer1.0-0 libgstreamer-plugins-base1.0-0 \
+    libsoup-3.0-0 libmspack0 libpango-1.0-0 libsecret-1-0 dbus \
+    && rm -rf /var/lib/apt/lists/*
+RUN mkdir -p /tmp/orca /opt/orca \
+    && curl --fail --location --silent --show-error \
+       "https://github.com/OrcaSlicer/OrcaSlicer/releases/download/v${ORCA_VERSION}/OrcaSlicer_Linux_AppImage_Ubuntu2404_V${ORCA_VERSION}.AppImage" \
+       --output /tmp/orca/OrcaSlicer.AppImage \
+    && echo "${ORCA_APPIMAGE_SHA256}  /tmp/orca/OrcaSlicer.AppImage" | sha256sum --check - \
+    && chmod +x /tmp/orca/OrcaSlicer.AppImage \
+    && cd /tmp/orca && ./OrcaSlicer.AppImage --appimage-extract \
+    && cp -a /tmp/orca/squashfs-root/. /opt/orca/ \
+    && rm -rf /tmp/orca
+ENTRYPOINT ["/opt/orca/bin/orca-slicer"]

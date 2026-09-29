@@ -1,0 +1,19 @@
+{
+  "version": 2,
+  "name": "POC PLA example (not a validated printer profile)",
+  "inherits": "fdmprinter",
+  "metadata": {"type": "quality_changes", "setting_version": 22},
+  "settings": {
+    "layer_height": {"default_value": 0.2},
+    "line_width": {"default_value": 0.4},
+    "material_diameter": {"default_value": 1.75},
+    "material_print_temperature": {"default_value": 200},
+    "material_bed_temperature": {"default_value": 60},
+    "speed_print": {"default_value": 50},
+    "speed_travel": {"default_value": 150},
+    "infill_sparse_density": {"default_value": 20},
+    "top_bottom_thickness": {"default_value": 0.8},
+    "wall_thickness": {"default_value": 1.2},
+    "adhesion_type": {"default_value": "skirt"}
+  }
+}

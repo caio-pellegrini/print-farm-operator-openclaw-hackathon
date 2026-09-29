@@ -1,0 +1,146 @@
+{
+  "appimage_sha256": "d501b103fac5424513ec0e8d6bc145fb30719de2c7d94d7320d723740c81a7fd",
+  "bundle_sha256": "ed6ace8e94e869076168f560f4cbaa971a09eeefb40d2b40adca1753a6bff242",
+  "cli_overlays": {
+    "filament": {
+      "filament_settings_id": "Bambu PLA Basic @BBL A1",
+      "from": "system",
+      "inherits": "Bambu PLA Basic @base",
+      "setting_id": "GFSA00_04"
+    },
+    "machine": {
+      "from": "system",
+      "inherits": "fdm_bbl_3dp_001_common",
+      "printer_settings_id": "Bambu Lab A1 0.4 nozzle",
+      "setting_id": "GM030"
+    },
+    "process": {
+      "from": "system",
+      "inherits": "fdm_process_single_0.20",
+      "print_settings_id": "0.20mm Standard @BBL A1",
+      "setting_id": "GP079"
+    }
+  },
+  "files": {
+    "filament.json": {
+      "sha256": "dc8fe3a60b9c421af6640252804f2621cd456556304176a3c2248b7c8058cf83",
+      "size_bytes": 7296
+    },
+    "machine.json": {
+      "sha256": "1b4dbb59e011a770c101145f9ec0995fbb7019699fde01264e1a8264158254f3",
+      "size_bytes": 12010
+    },
+    "process.json": {
+      "sha256": "3a7f5f1aa589477fde9ac29375c18a1e5f3a22d17368cd00efe26daa42ba6a5e",
+      "size_bytes": 7307
+    }
+  },
+  "profiles": {
+    "filament": {
+      "ancestry_parent_to_child": [
+        {
+          "preset_id": "fdm_filament_common",
+          "source_path": "filament/fdm_filament_common.json",
+          "source_sha256": "8c7105b7d59a28f600c43a946f067b8b4d707b9711c0bf6b88e9166e48878548"
+        },
+        {
+          "preset_id": "fdm_filament_pla",
+          "source_path": "filament/fdm_filament_pla.json",
+          "source_sha256": "670d21ea6bdf1cd4b0a2bfddc743612ffd896cd6e5dbe767c25d2c4165c49a30"
+        },
+        {
+          "preset_id": "Bambu PLA Basic @base",
+          "source_path": "filament/Bambu PLA Basic @base.json",
+          "source_sha256": "7783968745a19570354ca0601258cd5b82a6c96f835b682741635095b49e9cc7"
+        },
+        {
+          "preset_id": "Bambu PLA Basic @BBL A1",
+          "source_path": "filament/Bambu PLA Basic @BBL A1.json",
+          "source_sha256": "966589ca1c1d5007a470fb0d60e42a4fae2b15ef2fba535fbd8ad72aa92c047d"
+        }
+      ],
+      "preset_id": "Bambu PLA Basic @BBL A1",
+      "resolved_sha256": "dc8fe3a60b9c421af6640252804f2621cd456556304176a3c2248b7c8058cf83",
+      "source_compatible_printers": [
+        "Bambu Lab A1 0.4 nozzle",
+        "Bambu Lab A1 0.6 nozzle",
+        "Bambu Lab A1 0.8 nozzle"
+      ],
+      "source_from": "system",
+      "source_inherits": "Bambu PLA Basic @base",
+      "source_setting_id": "GFSA00_04",
+      "type": "filament"
+    },
+    "machine": {
+      "ancestry_parent_to_child": [
+        {
+          "preset_id": "fdm_machine_common",
+          "source_path": "machine/fdm_machine_common.json",
+          "source_sha256": "26ef8ee697849323e67d8e1a9026c175cebe3397e38c5091dddb5cd3fc52e94c"
+        },
+        {
+          "preset_id": "fdm_bbl_3dp_001_common",
+          "source_path": "machine/fdm_bbl_3dp_001_common.json",
+          "source_sha256": "2ca207f457c1f9b3eb25a1801adb2eaa8ddc5620f5a8945abb51a3fcddab5e47"
+        },
+        {
+          "preset_id": "Bambu Lab A1 0.4 nozzle",
+          "source_path": "machine/Bambu Lab A1 0.4 nozzle.json",
+          "source_sha256": "f17e7679e69b0bbe2fd611d514b276a0c5dc117124f3d8c7c83ba11418c316bc"
+        }
+      ],
+      "preset_id": "Bambu Lab A1 0.4 nozzle",
+      "resolved_sha256": "1b4dbb59e011a770c101145f9ec0995fbb7019699fde01264e1a8264158254f3",
+      "source_compatible_printers": [],
+      "source_from": "system",
+      "source_inherits": "fdm_bbl_3dp_001_common",
+      "source_setting_id": "GM030",
+      "type": "machine"
+    },
+    "process": {
+      "ancestry_parent_to_child": [
+        {
+          "preset_id": "fdm_process_common",
+          "source_path": "process/fdm_process_common.json",
+          "source_sha256": "d7981c4b92854f251b8697e1bb621c63fe393f263fb8024ab63c401525d543d7"
+        },
+        {
+          "preset_id": "fdm_process_single_common",
+          "source_path": "process/fdm_process_single_common.json",
+          "source_sha256": "05b38ac1318e465e817978b36da51754f928da0172738a20bb3a8d4a69eb4769"
+        },
+        {
+          "preset_id": "fdm_process_single_0.20",
+          "source_path": "process/fdm_process_single_0.20.json",
+          "source_sha256": "cdda8d56d67f62a0faa892cb6efc605ebb5c745bf742f6ead4daaeb6627c182a"
+        },
+        {
+          "preset_id": "0.20mm Standard @BBL A1",
+          "source_path": "process/0.20mm Standard @BBL A1.json",
+          "source_sha256": "2bd33159b3ec659567a63b6ea6f5373af7431c68516e7d3e02693a4cef395079"
+        }
+      ],
+      "preset_id": "0.20mm Standard @BBL A1",
+      "resolved_sha256": "3a7f5f1aa589477fde9ac29375c18a1e5f3a22d17368cd00efe26daa42ba6a5e",
+      "source_compatible_printers": [
+        "Bambu Lab A1 0.4 nozzle"
+      ],
+      "source_from": "system",
+      "source_inherits": "fdm_process_single_0.20",
+      "source_setting_id": "GP079",
+      "type": "process"
+    }
+  },
+  "resolution_strategy": "Bambu Studio bundled system presets; values merged parent-to-child; system identity and source inheritance metadata retained for CLI compatibility",
+  "schema_version": 1,
+  "slicer": "Bambu Studio",
+  "slicer_version": "02.08.02.61",
+  "target": {
+    "filament": "Bambu PLA Basic @BBL A1",
+    "filament_density_g_cm3": 1.26,
+    "material_family": "PLA",
+    "nozzle_diameter_mm": 0.4,
+    "printer_model": "Bambu Lab A1",
+    "process": "0.20mm Standard @BBL A1"
+  }
+}

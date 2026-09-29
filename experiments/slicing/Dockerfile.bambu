@@ -1,0 +1,21 @@
+FROM ubuntu:24.04@sha256:008173c23f95b170204355c12626cb5a965d779a7e1283b09e9cffbb1bf33ca3
+ARG BAMBU_VERSION=02.08.02.61
+ARG BAMBU_APPIMAGE_SHA256=d501b103fac5424513ec0e8d6bc145fb30719de2c7d94d7320d723740c81a7fd
+RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+    ca-certificates curl libopengl0 libglu1-mesa libgtk-3-0 libwebkit2gtk-4.1-0 \
+    libsm6 libice6 libx11-6 libxext6 libxkbcommon0 libegl1 libglx0 \
+    libwayland-egl1 libsoup-3.0-0 libmspack0 libpango-1.0-0 libsecret-1-0 dbus \
+    && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends libnss3 \
+    && rm -rf /var/lib/apt/lists/*
+RUN mkdir -p /tmp/bambu /opt/bambu \
+    && curl --fail --location --silent --show-error \
+       "https://github.com/bambulab/BambuStudio/releases/download/v${BAMBU_VERSION}/BambuStudio_ubuntu24.04-v${BAMBU_VERSION}-20260820225108.AppImage" \
+       --output /tmp/bambu/BambuStudio.AppImage \
+    && echo "${BAMBU_APPIMAGE_SHA256}  /tmp/bambu/BambuStudio.AppImage" | sha256sum --check - \
+    && chmod +x /tmp/bambu/BambuStudio.AppImage \
+    && cd /tmp/bambu && ./BambuStudio.AppImage --appimage-extract \
+    && cp -a /tmp/bambu/squashfs-root/. /opt/bambu/ \
+    && rm -rf /tmp/bambu
+COPY profiles/bambu-a1-0.4 /opt/profiles/bambu
+ENTRYPOINT ["/opt/bambu/AppRun"]

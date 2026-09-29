@@ -1,0 +1,11 @@
+{
+  "id": "print-farm-operator",
+  "name": "Print Farm Operator",
+  "blurb": "A 3D printing farm operations agent for STL analysis, quoting review, and manual production workflows.",
+  "runtime": "OpenClaw on Plow",
+  "repository": "https://github.com/caio-pellegrini/print-farm-operator-openclaw-hackathon",
+  "license": "MIT",
+  "logo": "https://raw.githubusercontent.com/caio-pellegrini/print-farm-operator-openclaw-hackathon/main/logo.png",
+  "demo_video": null,
+  "demo_video_status": "Needs a real tester recording; do not substitute generated or simulated usage."
+}

@@ -1,0 +1,208 @@
+{
+  "business_config": {
+    "energy_brl_kwh": 0.95,
+    "energy_kwh": 0.12,
+    "machine_brl_h": 2.0,
+    "margin": 0.4,
+    "material_brl_kg": 90.0,
+    "material_density_g_cm3": 1.24,
+    "quantity": 1,
+    "setup_brl": 0.0
+  },
+  "fixture": "experiments/stl-analysis/samples/small-box-20mm.stl",
+  "fixture_sha256": "4ca3d19d01e11ee608d81218670db3547d320cbc7bef4e36b64339cf4285ad70",
+  "quote_engine": "experiments/quote-engine/quote.py:quote_slicer_result",
+  "results": {
+    "bambustudio": {
+      "errors": [],
+      "execution_wall_seconds": 0.511,
+      "input_sha256": "4ca3d19d01e11ee608d81218670db3547d320cbc7bef4e36b64339cf4285ad70",
+      "material_consumption": {
+        "volume_mm3": 43487.39
+      },
+      "output_artifact": {
+        "media_type": "text/x-gcode",
+        "size_bytes": 246984
+      },
+      "print_time_seconds": 1272,
+      "profile": {
+        "id": "bambu-a1-04-bambu-pla-basic-020-standard",
+        "material": "Bambu PLA Basic @BBL A1 (bundled Bambu preset)",
+        "printer": "Bambu Lab A1 0.4 nozzle (bundled Bambu preset)",
+        "process": "0.20mm Standard @BBL A1 (bundled Bambu preset)"
+      },
+      "quote": {
+        "estimated_cost_brl": 5.6,
+        "estimated_gross_profit_brl": 3.73,
+        "inputs": {
+          "cost": 5.6001393906666666,
+          "energy": 0.040279999999999996,
+          "energy_brl_kwh": 0.95,
+          "energy_kwh": 0.12,
+          "filament_volume_mm3": 43487.39,
+          "hours": 0.35333333333333333,
+          "machine": 0.7066666666666667,
+          "machine_brl_h": 2.0,
+          "margin": 0.4,
+          "material": 4.8531927239999995,
+          "material_brl_kg": 90.0,
+          "material_density_g_cm3": 1.24,
+          "price": 9.333565651111112,
+          "quantity": 1,
+          "setup_brl": 0.0,
+          "weight_g": 53.9243636
+        },
+        "suggested_order_price_brl": 9.33,
+        "suggested_unit_price_brl": 9.33
+      },
+      "schema_version": 1,
+      "slicer_id": "bambustudio",
+      "slicer_version": "02.08.02.61",
+      "warnings": []
+    },
+    "crealityprint": {
+      "errors": [],
+      "execution_wall_seconds": 0.629,
+      "input_sha256": "4ca3d19d01e11ee608d81218670db3547d320cbc7bef4e36b64339cf4285ad70",
+      "material_consumption": {
+        "volume_mm3": 1940.0
+      },
+      "output_artifact": {
+        "media_type": "text/x-gcode",
+        "size_bytes": 137746
+      },
+      "print_time_seconds": 507,
+      "profile": {
+        "id": "creality-ender3-v3se-04-cr-pla-020-standard",
+        "material": "CR-PLA @Creality Ender-3 V3 SE 0.4 nozzle",
+        "printer": "Creality Ender-3 V3 SE 0.4 nozzle (bundled Creality preset)",
+        "process": "0.20mm Standard @Creality Ender-3 V3 SE 0.4 nozzle"
+      },
+      "quote": {
+        "estimated_cost_brl": 0.51,
+        "estimated_gross_profit_brl": 0.34,
+        "inputs": {
+          "cost": 0.5142256666666667,
+          "energy": 0.016054999999999996,
+          "energy_brl_kwh": 0.95,
+          "energy_kwh": 0.12,
+          "filament_volume_mm3": 1940.0,
+          "hours": 0.14083333333333334,
+          "machine": 0.2816666666666667,
+          "machine_brl_h": 2.0,
+          "margin": 0.4,
+          "material": 0.216504,
+          "material_brl_kg": 90.0,
+          "material_density_g_cm3": 1.24,
+          "price": 0.8570427777777778,
+          "quantity": 1,
+          "setup_brl": 0.0,
+          "weight_g": 2.4055999999999997
+        },
+        "suggested_order_price_brl": 0.86,
+        "suggested_unit_price_brl": 0.86
+      },
+      "schema_version": 1,
+      "slicer_id": "crealityprint",
+      "slicer_version": "7.2.1.5476",
+      "warnings": []
+    },
+    "curaengine": {
+      "errors": [],
+      "execution_wall_seconds": 1.106,
+      "input_sha256": "4ca3d19d01e11ee608d81218670db3547d320cbc7bef4e36b64339cf4285ad70",
+      "material_consumption": {
+        "volume_mm3": 2968.0
+      },
+      "print_time_seconds": 2035,
+      "profile": {
+        "id": "cura-ultimaker2plus-generic-pla-normal",
+        "material": "Generic PLA; 2.85 mm; density 1.24 g/cm3",
+        "printer": "Ultimaker 2+ (official Cura 5.13.0 machine/extruder definitions)",
+        "process": "Normal 0.1 mm simplified project CLI map"
+      },
+      "quote": {
+        "estimated_cost_brl": 1.53,
+        "estimated_gross_profit_brl": 1.02,
+        "inputs": {
+          "cost": 1.5262260222222221,
+          "energy": 0.06444166666666666,
+          "energy_brl_kwh": 0.95,
+          "energy_kwh": 0.12,
+          "filament_volume_mm3": 2968.0,
+          "hours": 0.5652777777777778,
+          "machine": 1.1305555555555555,
+          "machine_brl_h": 2.0,
+          "margin": 0.4,
+          "material": 0.3312288,
+          "material_brl_kg": 90.0,
+          "material_density_g_cm3": 1.24,
+          "price": 2.543710037037037,
+          "quantity": 1,
+          "setup_brl": 0.0,
+          "weight_g": 3.68032
+        },
+        "suggested_order_price_brl": 2.54,
+        "suggested_unit_price_brl": 2.54
+      },
+      "schema_version": 1,
+      "slicer_id": "curaengine",
+      "slicer_version": "5.13.0",
+      "warnings": [
+        "[2026-09-27 05:19:07.654] [warning] JSON setting 'reset_flow_duration' has no [default_]value!",
+        "[2026-09-27 05:19:07.656] [warning] JSON setting 'acceleration_layer_0' has no [default_]value!",
+        "[2026-09-27 05:19:07.656] [warning] JSON setting 'acceleration_travel_enabled' has no [default_]value!",
+        "[2026-09-27 05:19:07.656] [warning] JSON setting 'bridge_enable_more_layers' has no [default_]value!",
+        "[2026-09-27 05:19:07.656] [warning] JSON setting 'bridge_fan_speed' has no [default_]value!",
+        "125 additional warnings omitted."
+      ]
+    },
+    "orcaslicer": {
+      "errors": [],
+      "execution_wall_seconds": 0.673,
+      "input_sha256": "4ca3d19d01e11ee608d81218670db3547d320cbc7bef4e36b64339cf4285ad70",
+      "material_consumption": {
+        "volume_mm3": 2020.0
+      },
+      "output_artifact": {
+        "media_type": "text/x-gcode",
+        "size_bytes": 203885
+      },
+      "print_time_seconds": 1062,
+      "profile": {
+        "id": "orca-ender3-v3se-04-generic-pla-standard",
+        "material": "Generic PLA @System",
+        "printer": "Creality Ender-3 V3 SE 0.4 nozzle (bundled Orca preset)",
+        "process": "0.20mm Standard @Creality Ender3V3SE 0.4"
+      },
+      "quote": {
+        "estimated_cost_brl": 0.85,
+        "estimated_gross_profit_brl": 0.57,
+        "inputs": {
+          "cost": 0.849062,
+          "energy": 0.03362999999999999,
+          "energy_brl_kwh": 0.95,
+          "energy_kwh": 0.12,
+          "filament_volume_mm3": 2020.0,
+          "hours": 0.295,
+          "machine": 0.59,
+          "machine_brl_h": 2.0,
+          "margin": 0.4,
+          "material": 0.22543199999999997,
+          "material_brl_kg": 90.0,
+          "material_density_g_cm3": 1.24,
+          "price": 1.4151033333333334,
+          "quantity": 1,
+          "setup_brl": 0.0,
+          "weight_g": 2.5048
+        },
+        "suggested_order_price_brl": 1.42,
+        "suggested_unit_price_brl": 1.42
+      },
+      "schema_version": 1,
+      "slicer_id": "orcaslicer",
+      "slicer_version": "2.4.2",
+      "warnings": []
+    }
+  }
+}

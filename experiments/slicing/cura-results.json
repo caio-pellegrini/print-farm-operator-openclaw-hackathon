@@ -1,0 +1,93 @@
+{
+  "engine": "CuraEngine 5.0.0 in Debian trixie; local Docker image",
+  "results": [
+    {
+      "sample": "experiments/stl-analysis/samples/complex-stepped-block.stl",
+      "printer_definition": "Creality Ender-3 (generic 2018 preset; not V3 SE)",
+      "material": "PLA; 1.75 mm explicitly set on extruder 0",
+      "exit_code": 0,
+      "wall_seconds": 0.888,
+      "slicer_estimate_seconds": 6850,
+      "filament_length_m": 9.40625,
+      "estimated_weight_g": 28.05,
+      "filament_volume_mm3": 22624.0,
+      "gcode_size_bytes": 1203237,
+      "warning_count": 110,
+      "warnings_sample": [
+        "[WARNING] Unrecognized data type in JSON setting machine_disallowed_areas",
+        "[WARNING] Unrecognized data type in JSON setting nozzle_disallowed_areas",
+        "[WARNING] Unrecognized data type in JSON setting machine_head_with_fans_polygon",
+        "[WARNING] JSON setting machine_max_feedrate_x has no default_value!",
+        "[WARNING] JSON setting machine_max_feedrate_y has no default_value!"
+      ],
+      "gcode_file_header_is_reliable": false,
+      "log_tail": ";MAXX:113.6\n;MAXY:78.6\n;MAXZ:38.1\nEnd of gcode header.\nPrint time (s): 6850\nPrint time (hr|min|s): 1h 54m 10s\nFilament (mm^3): 22624"
+    },
+    {
+      "sample": "experiments/stl-analysis/samples/medium-cylinder-60x40mm.stl",
+      "printer_definition": "Creality Ender-3 (generic 2018 preset; not V3 SE)",
+      "material": "PLA; 1.75 mm explicitly set on extruder 0",
+      "exit_code": 0,
+      "wall_seconds": 0.905,
+      "slicer_estimate_seconds": 13926,
+      "filament_length_m": 22.3144,
+      "estimated_weight_g": 66.55,
+      "filament_volume_mm3": 53672.0,
+      "gcode_size_bytes": 1626503,
+      "warning_count": 109,
+      "warnings_sample": [
+        "[WARNING] Unrecognized data type in JSON setting machine_disallowed_areas",
+        "[WARNING] Unrecognized data type in JSON setting nozzle_disallowed_areas",
+        "[WARNING] Unrecognized data type in JSON setting machine_head_with_fans_polygon",
+        "[WARNING] JSON setting machine_max_feedrate_x has no default_value!",
+        "[WARNING] JSON setting machine_max_feedrate_y has no default_value!"
+      ],
+      "gcode_file_header_is_reliable": false,
+      "log_tail": ";MAXX:83.584\n;MAXY:83.584\n;MAXZ:40.1\nEnd of gcode header.\nPrint time (s): 13926\nPrint time (hr|min|s): 3h 52m 6s\nFilament (mm^3): 53672"
+    },
+    {
+      "sample": "experiments/stl-analysis/samples/small-box-20mm.stl",
+      "printer_definition": "Creality Ender-3 (generic 2018 preset; not V3 SE)",
+      "material": "PLA; 1.75 mm explicitly set on extruder 0",
+      "exit_code": 0,
+      "wall_seconds": 0.847,
+      "slicer_estimate_seconds": 995,
+      "filament_length_m": 1.26566,
+      "estimated_weight_g": 3.77,
+      "filament_volume_mm3": 3044.0,
+      "gcode_size_bytes": 185270,
+      "warning_count": 109,
+      "warnings_sample": [
+        "[WARNING] Unrecognized data type in JSON setting machine_disallowed_areas",
+        "[WARNING] Unrecognized data type in JSON setting nozzle_disallowed_areas",
+        "[WARNING] Unrecognized data type in JSON setting machine_head_with_fans_polygon",
+        "[WARNING] JSON setting machine_max_feedrate_x has no default_value!",
+        "[WARNING] JSON setting machine_max_feedrate_y has no default_value!"
+      ],
+      "gcode_file_header_is_reliable": false,
+      "log_tail": ";MAXX:74\n;MAXY:74\n;MAXZ:12.1\nEnd of gcode header.\nPrint time (s): 995\nPrint time (hr|min|s): 0h 16m 35s\nFilament (mm^3): 3044"
+    },
+    {
+      "sample": "experiments/stl-analysis/samples/two-separated-boxes.stl",
+      "printer_definition": "Creality Ender-3 (generic 2018 preset; not V3 SE)",
+      "material": "PLA; 1.75 mm explicitly set on extruder 0",
+      "exit_code": 0,
+      "wall_seconds": 0.866,
+      "slicer_estimate_seconds": 1834,
+      "filament_length_m": 2.18666,
+      "estimated_weight_g": 6.52,
+      "filament_volume_mm3": 5259.0,
+      "gcode_size_bytes": 319795,
+      "warning_count": 109,
+      "warnings_sample": [
+        "[WARNING] Unrecognized data type in JSON setting machine_disallowed_areas",
+        "[WARNING] Unrecognized data type in JSON setting nozzle_disallowed_areas",
+        "[WARNING] Unrecognized data type in JSON setting machine_head_with_fans_polygon",
+        "[WARNING] JSON setting machine_max_feedrate_x has no default_value!",
+        "[WARNING] JSON setting machine_max_feedrate_y has no default_value!"
+      ],
+      "gcode_file_header_is_reliable": false,
+      "log_tail": ";MAXX:113.6\n;MAXY:73.6\n;MAXZ:10.1\nEnd of gcode header.\nPrint time (s): 1834\nPrint time (hr|min|s): 0h 30m 34s\nFilament (mm^3): 5259"
+    }
+  ]
+}

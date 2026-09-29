@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-labelledby="title desc">
+  <title id="title">Print Farm Operator architecture</title>
+  <desc id="desc">OpenClaw connects a constrained print-farm plugin to analysis, quote and authorization workflows, private SQLite state, and an operator-controlled manual printer workflow.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#101827"/>
+      <stop offset="1" stop-color="#1c3550"/>
+    </linearGradient>
+    <style>
+      text { font-family: Inter, ui-sans-serif, system-ui, sans-serif; fill: #f2f6fa; }
+      .muted { fill: #b9c9d7; }
+      .card { fill: #243b52; stroke: #49657b; stroke-width: 2; }
+      .accent { fill: #36c7a0; }
+      .line { fill: none; stroke: #77d9bd; stroke-width: 4; stroke-linecap: round; }
+    </style>
+  </defs>
+  <rect width="1200" height="630" rx="28" fill="url(#bg)"/>
+  <text x="64" y="86" font-size="17" font-weight="700" letter-spacing="2" class="accent">OPENCLAW · 3D PRINT OPERATIONS</text>
+  <text x="64" y="145" font-size="42" font-weight="750">Print Farm Operator</text>
+  <text x="64" y="182" font-size="21" class="muted">Your first operations hire for your 3D printing business.</text>
+
+  <rect x="62" y="240" width="265" height="112" rx="18" class="card"/>
+  <text x="90" y="286" font-size="23" font-weight="700">OpenClaw 2.0</text>
+  <text x="90" y="321" font-size="16" class="muted">Local agent runtime</text>
+
+  <path d="M327 296 H390" class="line"/>
+  <circle cx="360" cy="296" r="6" class="accent"/>
+
+  <rect x="390" y="222" width="340" height="148" rx="18" class="card"/>
+  <text x="420" y="267" font-size="23" font-weight="700">Constrained farm tools</text>
+  <text x="420" y="305" font-size="16" class="muted">STL analysis · quote gates</text>
+  <text x="420" y="333" font-size="16" class="muted">roles · orders · audit events</text>
+
+  <path d="M730 296 H793" class="line"/>
+  <circle cx="763" cy="296" r="6" class="accent"/>
+
+  <rect x="793" y="222" width="344" height="148" rx="18" class="card"/>
+  <text x="824" y="267" font-size="23" font-weight="700">Private farm state</text>
+  <text x="824" y="305" font-size="16" class="muted">SQLite · jobs · quotes</text>
+  <text x="824" y="333" font-size="16" class="muted">local uploads · identity keys</text>
+
+  <path d="M560 370 V433 H335" class="line"/>
+  <path d="M560 433 H857 V457" class="line"/>
+  <rect x="112" y="457" width="445" height="103" rx="18" fill="#174b49" stroke="#36c7a0" stroke-width="2"/>
+  <text x="142" y="499" font-size="21" font-weight="700">Human-reviewed operations</text>
+  <text x="142" y="530" font-size="16" class="muted">Review quotes and confirm each production step</text>
+  <rect x="640" y="457" width="430" height="103" rx="18" class="card"/>
+  <text x="670" y="499" font-size="21" font-weight="700">ManualPrinterAdapter</text>
+  <text x="670" y="530" font-size="16" class="muted">No automatic printer control or telemetry</text>
+</svg>

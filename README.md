@@ -1,0 +1,156 @@
+# Print Farm Operator
+
+![Print Farm Operator logo](logo.png)
+
+**A practical operations agent for small 3D printing farms.**
+
+Print Farm Operator helps a farm owner configure printers, inspect STL geometry,
+review production readiness, and track manually operated jobs. Its application
+domain keeps persistent farm, request, quote, order, and job records, with role
+authorization, quote trust gates, and audit events.
+
+This hackathon build runs as an OpenClaw variant on Plow's official runtime.
+Plow supplies the supported chat surface, model route, credentials, Latch
+integration, and the five-minute Agent Index reporter. WhatsApp is an optional
+experiment outside the default image and demo path.
+
+## Install and use
+
+This source install uses Plow's normal chat line. It does not need an OpenAI API
+key, WhatsApp account, macOS, or Messages.app. The base image uses the model
+route provided by Plow. A tester needs a Plow account, a free line, Docker with
+Compose, Git, and Python 3.11 or newer.
+
+1. Install the official [plow-agents CLI](https://github.com/plow-pbc/plow-agents):
+
+   \`\`\`sh
+   git clone https://github.com/plow-pbc/plow-agents.git /tmp/plow-agents
+   export PATH="/tmp/plow-agents/bin:$PATH"
+   plow-agents login
+   \`\`\`
+
+   Follow its activation prompt from your phone. Then select a free line:
+
+   \`\`\`sh
+   plow-agents lines
+   \`\`\`
+
+2. Clone this public repository and change into it:
+
+   \`\`\`sh
+   git clone https://github.com/caio-pellegrini/print-farm-operator-openclaw-hackathon.git
+   cd print-farm-operator-openclaw-hackathon
+   \`\`\`
+
+3. Mint a local credential for the free Plow line shown in step 1:
+
+   \`\`\`sh
+   plow-agents mint LINE_UID
+   \`\`\`
+
+   The command creates the ignored plow-credentials file in this checkout.
+   Keep it private.
+
+4. Build and start the variant:
+
+   \`\`\`sh
+   docker compose up --build -d
+   docker compose logs -f agent
+   \`\`\`
+
+   The local OpenClaw dashboard is at <http://localhost:3001>. For the normal
+   tester flow, message the selected Plow line from the phone used to activate
+   the account. Plow's standard chat runtime handles the conversation.
+
+5. Complete farm onboarding in that conversation. The agent asks about printer
+   count and models, nozzle sizes, solo/team operation, primary slicer/material,
+   and whether customer messaging might be useful later. Each answer is saved
+   immediately in this installation's database.
+
+6. Perform a real farm interaction, such as asking for the saved configuration
+   or analyzing an STL that has been staged under the private
+   /var/lib/plow/print-farm/jobs directory. Confirm production actions with a
+   human operator; they are recorded through ManualPrinterAdapter and never
+   control a printer.
+
+Keep the Compose volume named state to retain this installation's farm data,
+OpenClaw sessions, Agent Index identity, and reporting key. docker compose down
+preserves it. Do not use docker compose down -v unless you intend to erase that
+installation.
+
+## Cloud deployment
+
+The Dockerfile is a variant of Plow's maintained OpenClaw base, pinned to an
+immutable image digest. Plow cloud deployment additionally requires the public
+variant image to be admitted for the Agent Index listing. That admission is
+controlled by a Plow admin. Until the image is admitted, testers can build and
+run from source using the local steps above.
+
+## Agent Index usage
+
+The image sets AGENT_ID=print-farm-operator. The inherited Plow reporter
+registers the installation when needed, reads actual OpenClaw session token
+usage, and reports every five minutes. It saves a fresh installation identity,
+Index reporting key, and usage ledger in /var/lib/plow; it does not read this
+developer's .stage1, WhatsApp session, SQLite data, or OpenClaw state.
+
+After the tester sends a real prompt, check reporter status in the container:
+
+\`\`\`sh
+docker compose exec -e HOME=/var/lib/plow agent python3 /opt/plow/agent-index-client.py status
+docker compose exec -e HOME=/var/lib/plow agent python3 /opt/plow/agent-index-client.py --agent print-farm-operator --dry-run
+\`\`\`
+
+The first command checks that this install has an Index key. The second
+collects actual local usage without posting it. The inherited reporter sends
+the measured usage automatically on its next five-minute pass. Verify the
+public listing at
+<https://aiworthusing.com/agent-index/print-farm-operator>. The Index client
+does not send prompts, job content, STL filenames, or source files.
+
+The listing owner can update the public repository and project image metadata
+after logging in with the official CLI:
+
+    plow-agents image set print-farm-operator \
+      --name "Print Farm Operator" \
+      --blurb "A 3D printing farm operations agent for STL analysis, quoting review, and manual production workflows." \
+      --repo https://github.com/caio-pellegrini/print-farm-operator-openclaw-hackathon \
+      --link https://github.com/caio-pellegrini/print-farm-operator-openclaw-hackathon \
+      --screenshot https://raw.githubusercontent.com/caio-pellegrini/print-farm-operator-openclaw-hackathon/main/logo.png
+
+Add the public YouTube video metadata after the real demo is recorded. The
+video field is intentionally absent until then.
+
+## Domain and runtime boundaries
+
+- **OpenClaw on Plow:** Plow's pinned base owns startup, model routing, standard
+  phone-line chat, Plow credentials, optional Latch connectivity, and usage
+  reporting. There is no macOS or iMessage dependency.
+- **Farm domain:** Python modules under experiments/ retain STL analysis,
+  onboarding, farm configuration, identity and role authorization, persistent
+  orders/quotes/jobs, quote readiness gates, production workflow, audit events,
+  and ManualPrinterAdapter.
+- **Domain bridge:** docker/plow_domain_tools.py fixes the database to the
+  current installation's persistent volume and dispatches the existing domain
+  operations. Messaging identity is not stored in or interpreted by the farm
+  domain.
+- **Printers:** manual operator-confirmed workflow only. There is no Bambu,
+  OctoPrint, Moonraker, or other printer control.
+- **Slicing:** the fixed Cura adapter and quote approval logic remain in the
+  source. A Docker-based Cura runtime is not bundled in the Plow image, so
+  automated slicing and new quote creation are not part of this source-install
+  smoke path.
+- **WhatsApp:** source files remain for historical/experimental use, but they
+  are not copied into the runtime image, needed for installation, or used by
+  the demo.
+
+See [architecture](docs/openclaw-architecture.md),
+[limitations](docs/limitations.md), [Agent Index metadata](docs/agent-index-metadata.json),
+and the [demo capture checklist](docs/demo-video.md). The project logo is
+included as logo.png. A recorded demo video still needs a real tester run.
+
+## License
+
+This project is MIT licensed. The Plow base image and inherited Agent Index
+client have their own licenses; see [license and distribution notes](docs/licenses-and-distribution.md)
+and the upstream Plow repositories.

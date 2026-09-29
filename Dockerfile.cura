@@ -1,0 +1,11 @@
+FROM debian:trixie
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends cura-engine ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+RUN apt-get update \
+    && apt-get download cura \
+    && dpkg-deb -x cura_*.deb /tmp/cura \
+    && mkdir -p /opt/cura/definitions \
+    && cp -a /tmp/cura/usr/share/cura/resources/definitions/. /opt/cura/definitions/ \
+    && rm -rf /var/lib/apt/lists/* /cura_*.deb /tmp/cura
+ENV CURA_ENGINE_SEARCH_PATH=/opt/cura/definitions

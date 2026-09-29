@@ -1,0 +1,21 @@
+FROM ubuntu:24.04@sha256:008173c23f95b170204355c12626cb5a965d779a7e1283b09e9cffbb1bf33ca3
+ARG CREALITY_VERSION=7.2.1
+ARG CREALITY_APPIMAGE_SHA256=b28f66c25d0c6652ed6ae49d0766780f46a5b839b93ce1968e639823e1f6e2f3
+RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+    ca-certificates curl libopengl0 libglu1-mesa libgtk-3-0 libwebkit2gtk-4.1-0 \
+    libsm6 libice6 libx11-6 libxext6 libxkbcommon0 libegl1 libglx0 \
+    libwayland-egl1 libsoup-3.0-0 libmspack0 libpango-1.0-0 libsecret-1-0 dbus \
+    && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends libnss3 \
+    && rm -rf /var/lib/apt/lists/*
+RUN mkdir -p /tmp/creality /opt/creality \
+    && curl --fail --location --silent --show-error \
+       "https://github.com/CrealityOfficial/CrealityPrint/releases/download/v${CREALITY_VERSION}/CrealityPrint-V7.2.1.5476-x86_64-Release.AppImage" \
+       --output /tmp/creality/CrealityPrint.AppImage \
+    && echo "${CREALITY_APPIMAGE_SHA256}  /tmp/creality/CrealityPrint.AppImage" | sha256sum --check - \
+    && chmod +x /tmp/creality/CrealityPrint.AppImage \
+    && cd /tmp/creality && ./CrealityPrint.AppImage --appimage-extract \
+    && cp -a /tmp/creality/squashfs-root/. /opt/creality/ \
+    && rm -rf /tmp/creality
+COPY profiles/creality-ender3-v3se-0.4 /opt/profiles/creality
+ENTRYPOINT ["/opt/creality/AppRun"]
