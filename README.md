@@ -23,40 +23,40 @@ Compose, Git, and Python 3.11 or newer.
 
 1. Install the official [plow-agents CLI](https://github.com/plow-pbc/plow-agents):
 
-   \`\`\`sh
+   ```sh
    git clone https://github.com/plow-pbc/plow-agents.git /tmp/plow-agents
    export PATH="/tmp/plow-agents/bin:$PATH"
    plow-agents login
-   \`\`\`
+   ```
 
    Follow its activation prompt from your phone. Then select a free line:
 
-   \`\`\`sh
+   ```sh
    plow-agents lines
-   \`\`\`
+   ```
 
 2. Clone this public repository and change into it:
 
-   \`\`\`sh
+   ```sh
    git clone https://github.com/caio-pellegrini/print-farm-operator-openclaw-hackathon.git
    cd print-farm-operator-openclaw-hackathon
-   \`\`\`
+   ```
 
 3. Mint a local credential for the free Plow line shown in step 1:
 
-   \`\`\`sh
+   ```sh
    plow-agents mint LINE_UID
-   \`\`\`
+   ```
 
    The command creates the ignored plow-credentials file in this checkout.
    Keep it private.
 
 4. Build and start the variant:
 
-   \`\`\`sh
+   ```sh
    docker compose up --build -d
    docker compose logs -f agent
-   \`\`\`
+   ```
 
    The local OpenClaw dashboard is at <http://localhost:3001>. For the normal
    tester flow, message the selected Plow line from the phone used to activate
@@ -96,10 +96,10 @@ developer's .stage1, WhatsApp session, SQLite data, or OpenClaw state.
 
 After the tester sends a real prompt, check reporter status in the container:
 
-\`\`\`sh
+```sh
 docker compose exec -e HOME=/var/lib/plow agent python3 /opt/plow/agent-index-client.py status
 docker compose exec -e HOME=/var/lib/plow agent python3 /opt/plow/agent-index-client.py --agent print-farm-operator --dry-run
-\`\`\`
+```
 
 The first command checks that this install has an Index key. The second
 collects actual local usage without posting it. The inherited reporter sends
@@ -118,8 +118,11 @@ after logging in with the official CLI:
       --link https://github.com/caio-pellegrini/print-farm-operator-openclaw-hackathon \
       --screenshot https://raw.githubusercontent.com/caio-pellegrini/print-farm-operator-openclaw-hackathon/main/logo.png
 
-Add the public YouTube video metadata after the real demo is recorded. The
-video field is intentionally absent until then.
+The Agent Index listing currently retains a previously published YouTube
+video. Its title and availability resolve, but it has not been verified as a
+demo of this Plow-based build. Record a real tester run and then replace the
+listing video metadata. The repository demo checklist tracks that remaining
+work.
 
 ## Domain and runtime boundaries
 
