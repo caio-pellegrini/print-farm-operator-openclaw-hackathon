@@ -10,7 +10,8 @@ Agent Index client/reporting schedule.
 The variant contributes its prompt, skills, Python domain, and STL tools plugin.
 It adds the app plugin path and tools to Plow's generated configuration while
 keeping Plow startup, provider/model route, channel, and reporter intact. Normal
-chat uses Plow Chat; local WebChat supports trusted STL uploads.
+chat uses Plow Chat; the STL plugin accepts trusted staged media from Plow Chat
+or local WebChat.
 
 ## Domain boundary
 

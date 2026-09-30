@@ -6,7 +6,7 @@ import test from "node:test";
 import {
   normalizeOpenClawInboundEvent,
   readTrustedOpenClawMedia,
-  readWebChatStlUpload,
+  readTrustedChannelStlUpload,
   TrustedMediaReadError,
 } from "../dist/inbound-media.js";
 
@@ -102,7 +102,7 @@ test("accepts one browser STL from trusted WebChat workspace media and rejects o
     channelId: "WebChat", accountId: "local-webchat", senderId: "browser-owner",
     conversationId: "webchat-session-1", messageId: "webchat-message-1",
   };
-  const upload = await readWebChatStlUpload(event, context, f.mediaRoot);
+  const upload = await readTrustedChannelStlUpload(event, context, f.mediaRoot);
   assert.equal(upload.channel, "webchat");
   assert.equal(upload.account_id, "local-webchat");
   assert.equal(upload.sender_id, "browser-owner");
@@ -111,7 +111,39 @@ test("accepts one browser STL from trusted WebChat workspace media and rejects o
   assert.equal(upload.filename, "browser-part.stl");
   assert.equal(upload.bytes.toString(), "browser upload bytes");
   await assert.rejects(
-    readWebChatStlUpload(event, { ...context, channelId: "whatsapp" }, f.mediaRoot),
+    readTrustedChannelStlUpload(event, { ...context, channelId: "whatsapp" }, f.mediaRoot),
     (error) => error instanceof TrustedMediaReadError && error.category === "unsupported_channel",
+  );
+});
+
+test("accepts staged Plow phone-line STL media from the trusted OpenClaw media root", async (t) => {
+  const f = await fixture();
+  t.after(() => rm(f.root, { recursive: true, force: true }));
+  const event = {
+    from: "plow-owner",
+    senderId: "plow-owner",
+    messageId: "plow-message-1",
+    media: [{ path: f.path, contentType: "model/stl", kind: "document", messageId: "plow-message-1" }],
+  };
+  const context = {
+    channelId: "plow", accountId: "chat", senderId: "plow-owner",
+    conversationId: "plow-conversation-1", messageId: "plow-message-1",
+  };
+  const upload = await readTrustedChannelStlUpload(event, context, f.mediaRoot);
+  assert.equal(upload.channel, "plow");
+  assert.equal(upload.account_id, "chat");
+  assert.equal(upload.sender_id, "plow-owner");
+  assert.equal(upload.conversation_id, "plow-conversation-1");
+  assert.equal(upload.message_id, "plow-message-1");
+  assert.equal(upload.filename, "opaque-model.stl");
+  assert.equal(upload.bytes.toString(), "validated by the application bridge");
+
+  await assert.rejects(
+    readTrustedChannelStlUpload({ ...event, mediaStagingPending: true }, context, f.mediaRoot),
+    (error) => error instanceof TrustedMediaReadError && error.category === "media_staging_pending",
+  );
+  await assert.rejects(
+    readTrustedChannelStlUpload(event, { ...context, isGroup: true }, f.mediaRoot),
+    (error) => error instanceof TrustedMediaReadError && error.category === "group_conversation_not_supported",
   );
 });

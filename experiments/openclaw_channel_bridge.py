@@ -213,13 +213,14 @@ def submit_public_channel_request(
     }
 
 
-def submit_webchat_stl_attachment(
+def submit_trusted_stl_attachment(
     database: Path,
     spool_root: Path,
     private_jobs_root: Path,
     *,
     signing_key: bytes,
     audience: str,
+    channel: str,
     account_id: str,
     sender_id: str,
     conversation_id: str,
@@ -228,14 +229,16 @@ def submit_webchat_stl_attachment(
     content: bytes,
     analyzer_script: Path,
 ) -> dict:
-    """Submit one trusted WebChat upload through the existing private request flow."""
+    """Submit one runtime-verified WebChat or Plow STL through private request flow."""
+    if channel not in {"webchat", "plow"}:
+        raise AuthorizationError("The STL attachment adapter accepts WebChat and Plow Chat only.")
     values = (account_id, sender_id, conversation_id, message_id)
     if any(not isinstance(value, str) or not value.strip() or len(value) > 1024 for value in values):
-        raise ValueError("The WebChat upload lacks trusted message context.")
+        raise ValueError("The trusted channel upload lacks message context.")
     if not isinstance(content, bytes):
-        raise ValueError("The WebChat attachment bytes are unavailable.")
-    event_key = "\0".join(("webchat", account_id, sender_id, conversation_id, message_id))
-    intake_id = f"webchat-{uuid.uuid5(uuid.NAMESPACE_URL, event_key).hex}"
+        raise ValueError("The trusted channel attachment bytes are unavailable.")
+    event_key = "\0".join((channel, account_id, sender_id, conversation_id, message_id))
+    intake_id = f"{channel.replace('-', '_')}-{uuid.uuid5(uuid.NAMESPACE_URL, event_key).hex}"
     attachment_reference = "ocw_" + hashlib.sha256(event_key.encode("utf-8")).hexdigest()
     result = submit_public_channel_request(
         database,
@@ -243,14 +246,15 @@ def submit_webchat_stl_attachment(
         private_jobs_root,
         signing_key=signing_key,
         audience=audience,
-        channel="webchat",
+        channel=channel,
         external_account_id=account_id,
         external_sender_id=sender_id,
         conversation_context=conversation_id,
         attachment_reference=attachment_reference,
         submitted_filename=filename,
         attachment_reader=lambda reference: content if reference == attachment_reference else b"",
-        request_summary="Analyze STL uploaded in WebChat",
+        request_summary=("Analyze STL uploaded in WebChat" if channel == "webchat"
+                         else "Analyze STL uploaded in Plow Chat"),
         analyzer_script=analyzer_script,
         quantity=1,
         is_group=False,
@@ -262,7 +266,7 @@ def submit_webchat_stl_attachment(
             JOIN stl_analyses a ON a.analysis_id=q.analysis_id WHERE o.intake_id=?""",
             (intake_id,)).fetchone()
     if persisted is None:
-        raise RuntimeError("The WebChat STL request did not persist its analysis.")
+        raise RuntimeError("The trusted channel STL request did not persist its analysis.")
     return {
         "status": "created",
         "job_id": result["job_id"],
@@ -539,18 +543,18 @@ def dispatch_plugin_request(payload: dict) -> dict:
     }
     database = Path(payload["database"])
     pending_root = Path(payload.get("pending_intake_root", Path(payload["spool_root"]).parent / "pending-intakes"))
-    if payload["operation"] == "submit_webchat_stl":
-        if payload.get("channel") != "webchat":
-            raise AuthorizationError("The STL attachment adapter accepts WebChat events only.")
+    if payload["operation"] == "submit_trusted_stl_attachment":
+        if payload.get("channel") not in {"webchat", "plow"}:
+            raise AuthorizationError("The STL attachment adapter accepts WebChat and Plow Chat only.")
         encoded = payload.get("attachment_b64")
         if not isinstance(encoded, str):
-            raise ValueError("A WebChat STL attachment is required.")
+            raise ValueError("A trusted channel STL attachment is required.")
         content = base64.b64decode(encoded, validate=True)
         if not content or len(content) > 25 * 1024 * 1024:
-            raise ValueError("The WebChat STL must be no larger than 25 MiB.")
-        return submit_webchat_stl_attachment(
+            raise ValueError("The STL attachment must be no larger than 25 MiB.")
+        return submit_trusted_stl_attachment(
             database, Path(payload["spool_root"]), Path(payload["private_jobs_root"]),
-            signing_key=key, audience=payload["audience"],
+            signing_key=key, audience=payload["audience"], channel=payload["channel"],
             account_id=payload["account_id"], sender_id=payload["sender_id"],
             conversation_id=payload.get("conversation_id", ""),
             message_id=payload.get("message_id", ""), filename=payload.get("filename", ""),

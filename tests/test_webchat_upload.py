@@ -41,7 +41,7 @@ class WebChatUploadTests(unittest.TestCase):
 
     def payload(self, *, filename="sample.stl", content=None, channel="webchat", message_id="webchat-message-1"):
         return {
-            "operation": "submit_webchat_stl",
+            "operation": "submit_trusted_stl_attachment",
             "database": str(self.db),
             "spool_root": str(self.spool),
             "private_jobs_root": str(self.jobs),
@@ -107,6 +107,24 @@ class WebChatUploadTests(unittest.TestCase):
         with connect_database(self.db) as connection:
             self.assertEqual(connection.execute("SELECT COUNT(*) FROM farm_users").fetchone()[0], 0)
             self.assertEqual(connection.execute("SELECT COUNT(*) FROM print_jobs").fetchone()[0], 0)
+
+    def test_valid_plow_phone_stl_uses_same_persisted_idempotent_intake(self):
+        payload = self.payload(channel="plow", message_id="plow-message-1")
+        result = dispatch_plugin_request(payload)
+        self.assertEqual(result["status"], "created")
+        self.assertFalse(result["idempotent_replay"])
+        self.assertEqual(result["quote_status"], "draft")
+        self.assertFalse(result["quote_issued"])
+        self.assertEqual(result["analysis"]["dimensions_mm"], {"x": 20.0, "y": 20.0, "z": 12.0})
+
+        replay = dispatch_plugin_request(payload)
+        self.assertTrue(replay["idempotent_replay"])
+        self.assertEqual(replay["job_id"], result["job_id"])
+        self.assertEqual(replay["analysis_id"], result["analysis_id"])
+        with connect_database(self.db) as connection:
+            self.assertEqual(connection.execute("SELECT COUNT(*) FROM print_jobs").fetchone()[0], 1)
+            self.assertEqual(connection.execute("SELECT COUNT(*) FROM orders").fetchone()[0], 1)
+            self.assertEqual(connection.execute("SELECT COUNT(*) FROM stl_analyses").fetchone()[0], 1)
 
 
 if __name__ == "__main__":

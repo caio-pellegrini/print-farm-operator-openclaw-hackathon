@@ -8,7 +8,7 @@ import { execFile, spawn } from "node:child_process";
 import { Type } from "typebox";
 import { defineToolPlugin } from "openclaw/plugin-sdk/tool-plugin";
 import { jsonResult } from "openclaw/plugin-sdk/tool-results";
-import { normalizeOpenClawInboundEvent, readTrustedOpenClawMedia, readWebChatStlUpload, trustedMediaFilename, TrustedMediaReadError } from "./inbound-media.js";
+import { normalizeOpenClawInboundEvent, readTrustedOpenClawMedia, readTrustedChannelStlUpload, trustedMediaFilename, TrustedMediaReadError } from "./inbound-media.js";
 import { markDuplicateInboundSession, sendClaimedIntakeReply, sendReplyForCompletedIntake, shouldSuppressDuplicateSessionReply } from "./intake-reply.js";
 import { parseBridgeResponse } from "./bridge-response.js";
 
@@ -769,24 +769,25 @@ pluginEntry.register = (api: Parameters<typeof pluginEntry.register>[0]) => {
   registerTools(api);
   api.on("message_received", async (event, context) => {
     const channel = context.channelId.trim().toLowerCase();
-    if (channel === "webchat" && event.media?.length) {
+    const trustedStlChannel = channel === "webchat" || channel === "plow";
+    if (trustedStlChannel && event.media?.length) {
       const config = api.config.plugins?.entries?.["print-farm-stl"]?.config as Record<string, unknown>;
       try {
-        const upload = await readWebChatStlUpload(event, context, String(config.openclawMediaRoot || ""));
+        const upload = await readTrustedChannelStlUpload(event, context, String(config.openclawMediaRoot || ""));
         await ensureIdentityKey(String(config.identityKeyFile || ""));
         const result = await runBridge(config, {
-          operation: "submit_webchat_stl", channel: upload.channel,
+          operation: "submit_trusted_stl_attachment", channel: upload.channel,
           account_id: upload.account_id, sender_id: upload.sender_id,
           conversation_id: upload.conversation_id, message_id: upload.message_id,
           filename: upload.filename, attachment_b64: upload.bytes.toString("base64"),
           analyzer_script: config.analyzerScript,
         });
-        api.logger.info(`WebChat STL intake persisted: status=${String(result.status || "unknown")} replay=${String(result.idempotent_replay === true)}.`);
+        api.logger.info(`Trusted ${upload.channel} STL intake persisted: status=${String(result.status || "unknown")} replay=${String(result.idempotent_replay === true)}.`);
       } catch (error) {
         const category = error instanceof TrustedMediaReadError
           ? error.category
           : error instanceof Error ? error.name : "UnknownError";
-        api.logger.warn(`WebChat STL attachment was not accepted: reason=${category}.`);
+        api.logger.warn(`Trusted ${channel} STL attachment was not accepted: reason=${category}.`);
       }
       return;
     }

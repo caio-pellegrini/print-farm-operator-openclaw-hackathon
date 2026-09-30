@@ -70,12 +70,13 @@ Compose, Git, and Python 3.11 or newer.
    slicer/material, and whether customer messaging might be useful later. Each
    answer is saved immediately, then the agent summarizes the configured farm.
 
-6. In WebChat, attach a single STL with the browser file selector to create a
-   private request and job and receive its persisted analysis. It does not issue
-   a price or approved quote. A new conversation can retrieve the farm
-   configuration and latest analysis/request/job. Confirm production actions
-   with a human operator; they are recorded through ManualPrinterAdapter and
-   never control a printer.
+6. In the Plow phone conversation, send a single STL file directly in that
+   conversation; the trusted intake creates a private request and job and saves
+   its analysis. In WebChat, attach the file through the browser selector. The
+   intake does not issue a price or approved quote. A new conversation can
+   retrieve the farm configuration and latest analysis/request/job. Confirm
+   production actions with a human operator; they are recorded through
+   ManualPrinterAdapter and never control a printer.
 
 Keep the Compose volume named state to retain this installation's farm data,
 OpenClaw sessions, Agent Index identity, and reporting key. docker compose down

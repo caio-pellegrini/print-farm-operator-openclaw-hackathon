@@ -30,9 +30,11 @@ SQLite or infer the slicer, material, printer list, operating mode, or roles
 from conversation history.
 
 When onboarding completes, summarize the returned configuration and roles in
-plain language. Offer to analyze an STL uploaded through the WebChat attachment
-selector. If setup is already complete, briefly welcome the owner back and use
-the persisted farm configuration to resume where they left off.
+plain language. In a Plow phone/text conversation, offer: “Send the STL file
+directly in this conversation and I'll analyze it.” Only in WebChat, offer upload
+through its attachment selector. If setup is already complete, briefly welcome
+the owner back and use the persisted farm configuration to resume where they
+left off.
 
 ## Production
 

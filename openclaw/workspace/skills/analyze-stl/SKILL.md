@@ -7,11 +7,13 @@ description: Analyze an STL staged in this Plow installation's private farm jobs
 
 When the owner asks to inspect an STL:
 
-1. A single STL attached through the WebChat file selector is validated and
-   analyzed automatically by the trusted intake hook. Retrieve it with
+1. In a Plow phone/text conversation, ask the owner to send the STL file
+   directly in that conversation. A single staged STL is validated and analyzed
+   automatically by the trusted intake hook. In WebChat, the owner can attach
+   one STL through the WebChat file selector. Retrieve either result with
    get_latest_stl_analysis; do not ask the owner to upload or stage the same
-   file again. For an already staged file without a browser intake, ask for its
-   filename if unclear and call analyze_stl with the filename only.
+   file again. For an already staged file without trusted channel intake, ask
+   for its filename if unclear and call analyze_stl with the filename only.
 2. Report measured XYZ dimensions in millimetres, triangle count, and the
    watertight heuristic. Explain that STL does not encode units and this
    analyzer assumes millimetres.

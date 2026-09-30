@@ -7,8 +7,9 @@
 - Farm onboarding provisions the Plow owner as the initial owner. The domain
   contains verified user/role workflows, but additional transport-to-role
   provisioning is not part of this variant's first-run setup.
-- WebChat accepts one `.stl` up to 25 MiB and persists its analysis, request,
-  and job as a draft without a price. Other analysis inputs must be staged under
+- WebChat and Plow Chat accept one staged `.stl` up to 25 MiB and persist its
+  analysis, request, and job as a draft without a price. Phone-line media must
+  be staged by the channel runtime. Other analysis inputs must be staged under
   the private farm jobs directory.
 - Automated Cura slicing requires the isolated runtime image and Docker
   execution path. These are not bundled in the Plow variant. Quote creation
