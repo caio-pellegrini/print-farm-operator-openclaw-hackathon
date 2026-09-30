@@ -2,17 +2,20 @@
 
 ![Print Farm Operator logo](logo.png)
 
-**A practical operations agent for small 3D printing farms.**
+**A practical operations agent for small 3D printing farms, built on OpenClaw and Plow's runtime.**
 
-Print Farm Operator helps a farm owner configure printers, inspect STL geometry,
-review production readiness, and track manually operated jobs. Its application
-domain keeps persistent farm, request, quote, order, and job records, with role
-authorization, quote trust gates, and audit events.
+I designed and built Print Farm Operator to explore what an AI operations hire could look like for a small 3D-printing business. The agent helps an owner configure a farm, inspect STL geometry, review quote and production readiness, and track manually operated jobs while keeping persistent operational state.
 
-This hackathon build runs as an OpenClaw variant on Plow's official runtime.
-Plow supplies the supported chat surface, model route, credentials, Latch
-integration, and the five-minute Agent Index reporter. WhatsApp is an optional
-experiment outside the default image and demo path.
+### What I built
+
+- Persistent farm, customer request, quote, order, and production-job workflows.
+- Owner, operator, and customer roles with authorization boundaries.
+- STL inspection and a CuraEngine-based slicing/quoting research path.
+- Quote trust gates and audit events around production transitions.
+- A manual printer adapter that keeps physical production human-confirmed rather than pretending the agent controls hardware.
+- An OpenClaw variant running on **Plow's official runtime**, using Plow's chat surface, model route, credentials, Latch integration, and Agent Index reporting.
+
+The project intentionally separates the AI conversation layer from deterministic domain operations and keeps printer-control integrations behind adapters so the workflow can evolve without coupling the agent to a specific printer ecosystem.
 
 ## Install and use
 
