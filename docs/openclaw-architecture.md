@@ -7,9 +7,10 @@ base image. Plow owns container startup, OpenClaw configuration includes, Plow
 Chat messaging, model credentials and routing, optional Latch access, and the
 Agent Index client/reporting schedule.
 
-The variant contributes an agent prompt, two OpenClaw skills, Python 3, and the
-farm domain source. It does not configure WhatsApp or another channel. The
-standard tester path uses Plow's phone line. Latch and a Mac are optional.
+The variant contributes its prompt, skills, Python domain, and STL tools plugin.
+It adds the app plugin path and tools to Plow's generated configuration while
+keeping Plow startup, provider/model route, channel, and reporter intact. Normal
+chat uses Plow Chat; local WebChat supports trusted STL uploads.
 
 ## Domain boundary
 

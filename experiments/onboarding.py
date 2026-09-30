@@ -33,6 +33,27 @@ def _set(connection: sqlite3.Connection, key: str, value) -> None:
                        (key, json.dumps(value, sort_keys=True)))
 
 
+def _farm_summary(config: dict, printers: list[dict], roles: list[str]) -> dict:
+    """Build a concise summary from the persisted onboarding facts."""
+    role_labels = {"OWNER": "Owner", "OPERATOR": "Operator"}
+    return {
+        "printer_count": len(printers),
+        "printers": [
+            {
+                "model": printer["model"],
+                "nozzle": (f'{printer["nozzle_diameter_mm"]:g} mm nozzle'
+                           if printer["nozzle_diameter_mm"] is not None else "nozzle size unknown"),
+            }
+            for printer in printers
+        ],
+        "primary_slicer": config.get("primary_slicer"),
+        "primary_material": config.get("primary_material"),
+        "operating_mode": "solo" if config.get("staff_mode") == "alone" else "team",
+        "roles": [role_labels.get(role, role) for role in roles],
+        "next_action": "Upload an STL in WebChat and I can analyze it.",
+    }
+
+
 def _parse_answer(step: str, answer: str, data: dict) -> object:
     answer = answer.strip()
     if step == "printer_count":
@@ -85,9 +106,12 @@ def advance_onboarding(db: Path, answer: str | None = None) -> dict:
         config = _get(connection, "onboarding_draft", {})
         index = int(_get(connection, "onboarding_step", 0))
         if _get(connection, "onboarding_complete", False):
-            return {"complete": True, "configuration": _get(connection, "farm_onboarding", {}),
-                    "printers": [dict(row) for row in connection.execute(
-                        "SELECT printer_id,name,model,nozzle_diameter_mm,adapter_id FROM printers WHERE active=1 ORDER BY name")]} 
+            config = _get(connection, "farm_onboarding", {})
+            printers = [dict(row) for row in connection.execute(
+                "SELECT printer_id,name,model,nozzle_diameter_mm,adapter_id FROM printers WHERE active=1 ORDER BY name")]
+            roles = config.get("roles", [])
+            return {"complete": True, "configuration": config, "printers": printers,
+                    "summary": _farm_summary(config, printers, roles)}
         if answer is not None:
             if index >= len(QUESTIONS):
                 raise ValueError("Onboarding is already complete.")
@@ -130,9 +154,10 @@ def advance_onboarding(db: Path, answer: str | None = None) -> dict:
         _set(connection, "primary_material", config["primary_material"])
         _set(connection, "customer_messaging_later", config["customer_messaging_later"])
         _set(connection, "onboarding_complete", True)
+        printers = [dict(row) for row in connection.execute(
+            "SELECT printer_id,name,model,nozzle_diameter_mm,adapter_id FROM printers WHERE active=1 ORDER BY name")]
         return {"complete": True, "configuration": final, "user_id": user_id,
-                "printers": [dict(row) for row in connection.execute(
-                    "SELECT printer_id,name,model,nozzle_diameter_mm,adapter_id FROM printers WHERE active=1 ORDER BY name")]}
+                "printers": printers, "summary": _farm_summary(final, printers, roles)}
 
 
 def get_farm_configuration(db: Path) -> dict:

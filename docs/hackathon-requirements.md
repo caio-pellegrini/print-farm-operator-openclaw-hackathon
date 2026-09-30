@@ -11,8 +11,8 @@ repository is not changed or used as an installation source.
 - Plow owns the OpenClaw startup contract, Plow Chat channel, credential
   injection, model route, optional Latch relay, and its supported Agent Index
   reporter.
-- The project adds its prompt, farm skills, and existing Python domain
-  operations. It does not patch Plow's boot process or reporting client.
+- The project adds its prompt, skills, domain code, and STL plugin to Plow's
+  generated plugin config. The pinned base, Plow boot, and reporter stay intact.
 - WhatsApp is absent from the default image. No Telegram or custom
   macOS/iMessage integration is included.
 
@@ -20,8 +20,8 @@ repository is not changed or used as an installation source.
 
 The documented source install uses the official plow-agents CLI to authenticate
 and mint credentials for a tester's Plow line, then builds the variant locally
-with Docker Compose. The tester contacts that line through Plow's normal chat
-surface, completes onboarding, and performs a real interaction.
+with Docker Compose. The tester uses Plow Chat or the local owner WebChat,
+completes onboarding, and performs a real interaction.
 
 An installation has a fresh state volume and its own Index installation id and
 key. The base reads OpenClaw session usage and reports every five minutes after

@@ -65,16 +65,17 @@ Compose, Git, and Python 3.11 or newer.
    tester flow, message the selected Plow line from the phone used to activate
    the account. Plow's standard chat runtime handles the conversation.
 
-5. Complete farm onboarding in that conversation. The agent asks about printer
-   count and models, nozzle sizes, solo/team operation, primary slicer/material,
-   and whether customer messaging might be useful later. Each answer is saved
-   immediately in this installation's database.
+5. Complete the persistent farm onboarding in that conversation. The agent asks
+   about printer count and models, nozzle sizes, solo/team operation, primary
+   slicer/material, and whether customer messaging might be useful later. Each
+   answer is saved immediately, then the agent summarizes the configured farm.
 
-6. Perform a real farm interaction, such as asking for the saved configuration
-   or analyzing an STL that has been staged under the private
-   /var/lib/plow/print-farm/jobs directory. Confirm production actions with a
-   human operator; they are recorded through ManualPrinterAdapter and never
-   control a printer.
+6. In WebChat, attach a single STL with the browser file selector to create a
+   private request and job and receive its persisted analysis. It does not issue
+   a price or approved quote. A new conversation can retrieve the farm
+   configuration and latest analysis/request/job. Confirm production actions
+   with a human operator; they are recorded through ManualPrinterAdapter and
+   never control a printer.
 
 Keep the Compose volume named state to retain this installation's farm data,
 OpenClaw sessions, Agent Index identity, and reporting key. docker compose down

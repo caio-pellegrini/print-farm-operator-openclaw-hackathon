@@ -6,6 +6,7 @@ import test from "node:test";
 import {
   normalizeOpenClawInboundEvent,
   readTrustedOpenClawMedia,
+  readWebChatStlUpload,
   TrustedMediaReadError,
 } from "../dist/inbound-media.js";
 
@@ -85,5 +86,32 @@ test("rejects media outside the configured OpenClaw media root and symlink subst
   await assert.rejects(
     readTrustedOpenClawMedia({ path: link }, f.mediaRoot),
     (error) => error instanceof TrustedMediaReadError && error.category === "symlinked_media_path",
+  );
+});
+
+test("accepts one browser STL from trusted WebChat workspace media and rejects other channels", async (t) => {
+  const f = await fixture();
+  t.after(() => rm(f.root, { recursive: true, force: true }));
+  const workspaceUpload = join(f.workspaceDir, "browser-part.stl");
+  await writeFile(workspaceUpload, Buffer.from("browser upload bytes"), { mode: 0o600 });
+  const event = {
+    messageId: "webchat-message-1",
+    media: [{ path: workspaceUpload, workspaceDir: f.workspaceDir, messageId: "webchat-message-1" }],
+  };
+  const context = {
+    channelId: "WebChat", accountId: "local-webchat", senderId: "browser-owner",
+    conversationId: "webchat-session-1", messageId: "webchat-message-1",
+  };
+  const upload = await readWebChatStlUpload(event, context, f.mediaRoot);
+  assert.equal(upload.channel, "webchat");
+  assert.equal(upload.account_id, "local-webchat");
+  assert.equal(upload.sender_id, "browser-owner");
+  assert.equal(upload.conversation_id, "webchat-session-1");
+  assert.equal(upload.message_id, "webchat-message-1");
+  assert.equal(upload.filename, "browser-part.stl");
+  assert.equal(upload.bytes.toString(), "browser upload bytes");
+  await assert.rejects(
+    readWebChatStlUpload(event, { ...context, channelId: "whatsapp" }, f.mediaRoot),
+    (error) => error instanceof TrustedMediaReadError && error.category === "unsupported_channel",
   );
 });

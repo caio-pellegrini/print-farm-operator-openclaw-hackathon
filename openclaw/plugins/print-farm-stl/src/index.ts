@@ -1,14 +1,14 @@
 import { constants } from "node:fs";
-import { createHash } from "node:crypto";
-import { mkdtemp, open, realpath, rm, stat, writeFile } from "node:fs/promises";
+import { createHash, randomBytes } from "node:crypto";
+import { mkdir, mkdtemp, open, realpath, rm, stat, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
-import { basename, extname, isAbsolute, join, resolve, sep } from "node:path";
+import { basename, dirname, extname, isAbsolute, join, resolve, sep } from "node:path";
 import { promisify } from "node:util";
 import { execFile, spawn } from "node:child_process";
 import { Type } from "typebox";
 import { defineToolPlugin } from "openclaw/plugin-sdk/tool-plugin";
 import { jsonResult } from "openclaw/plugin-sdk/tool-results";
-import { normalizeOpenClawInboundEvent, readTrustedOpenClawMedia, trustedMediaFilename, TrustedMediaReadError } from "./inbound-media.js";
+import { normalizeOpenClawInboundEvent, readTrustedOpenClawMedia, readWebChatStlUpload, trustedMediaFilename, TrustedMediaReadError } from "./inbound-media.js";
 import { markDuplicateInboundSession, sendClaimedIntakeReply, sendReplyForCompletedIntake, shouldSuppressDuplicateSessionReply } from "./intake-reply.js";
 import { parseBridgeResponse } from "./bridge-response.js";
 
@@ -123,6 +123,16 @@ function localStaffTool(ctx: { messageChannel?: string; senderIsOwner?: boolean 
   // A local Gateway token-backed WebChat owner is the trusted staff boundary.
   // Public channel sessions never receive these tools in their catalog.
   return ctx.messageChannel === "webchat" && ctx.senderIsOwner === true;
+}
+
+async function ensureIdentityKey(path: string): Promise<void> {
+  if (!isAbsolute(path)) throw new Error("The farm identity key path must be absolute.");
+  await mkdir(dirname(path), { recursive: true, mode: 0o700 });
+  try {
+    await writeFile(path, randomBytes(32), { flag: "wx", mode: 0o600 });
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code !== "EEXIST") throw error;
+  }
 }
 
 const pluginEntry = defineToolPlugin({
@@ -759,6 +769,27 @@ pluginEntry.register = (api: Parameters<typeof pluginEntry.register>[0]) => {
   registerTools(api);
   api.on("message_received", async (event, context) => {
     const channel = context.channelId.trim().toLowerCase();
+    if (channel === "webchat" && event.media?.length) {
+      const config = api.config.plugins?.entries?.["print-farm-stl"]?.config as Record<string, unknown>;
+      try {
+        const upload = await readWebChatStlUpload(event, context, String(config.openclawMediaRoot || ""));
+        await ensureIdentityKey(String(config.identityKeyFile || ""));
+        const result = await runBridge(config, {
+          operation: "submit_webchat_stl", channel: upload.channel,
+          account_id: upload.account_id, sender_id: upload.sender_id,
+          conversation_id: upload.conversation_id, message_id: upload.message_id,
+          filename: upload.filename, attachment_b64: upload.bytes.toString("base64"),
+          analyzer_script: config.analyzerScript,
+        });
+        api.logger.info(`WebChat STL intake persisted: status=${String(result.status || "unknown")} replay=${String(result.idempotent_replay === true)}.`);
+      } catch (error) {
+        const category = error instanceof TrustedMediaReadError
+          ? error.category
+          : error instanceof Error ? error.name : "UnknownError";
+        api.logger.warn(`WebChat STL attachment was not accepted: reason=${category}.`);
+      }
+      return;
+    }
     // WhatsApp is the only currently configured public customer surface.
     // The application correlation contract itself is channel-neutral.
     if (channel !== "whatsapp") return;

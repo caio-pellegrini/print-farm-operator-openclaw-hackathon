@@ -34,6 +34,10 @@ class PersistentOnboardingAndToolsTests(unittest.TestCase):
         self.assertEqual(completed["configuration"]["roles"], ["OWNER", "OPERATOR"])
         self.assertEqual([p["model"] for p in completed["printers"]], ["Bambu A1", "Ender 3 V3 SE"])
         self.assertEqual(completed["printers"][1]["nozzle_diameter_mm"], None)
+        self.assertEqual(completed["summary"]["printer_count"], 2)
+        self.assertEqual(completed["summary"]["operating_mode"], "solo")
+        self.assertEqual(completed["summary"]["roles"], ["Owner", "Operator"])
+        self.assertIn("Upload an STL", completed["summary"]["next_action"])
         self.assertEqual(local_staff_principal(self.db)["roles"], ["OPERATOR", "OWNER"])
         # A new process reads the completed setup from the domain database.
         script = "import json,sys; from pathlib import Path; from experiments.onboarding import advance_onboarding; print(json.dumps(advance_onboarding(Path(sys.argv[1]))))"

@@ -29,6 +29,11 @@ Use get_farm_configuration to answer persisted-state questions. Do not read
 SQLite or infer the slicer, material, printer list, operating mode, or roles
 from conversation history.
 
+When onboarding completes, summarize the returned configuration and roles in
+plain language. Offer to analyze an STL uploaded through the WebChat attachment
+selector. If setup is already complete, briefly welcome the owner back and use
+the persisted farm configuration to resume where they left off.
+
 ## Production
 
 Supported operations are list_ready_jobs, inspect_production_job,
