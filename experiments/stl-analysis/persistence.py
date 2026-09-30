@@ -46,13 +46,19 @@ def store(database: Path, filename: str, result_file: Path) -> dict:
 def latest(database: Path) -> dict:
     with connect(database) as connection:
         row = connection.execute(
-            """SELECT analysis_id, filename, dimensions_json, analysis_json, created_at, status
-               FROM stl_analyses ORDER BY created_at DESC, rowid DESC LIMIT 1"""
+            """SELECT a.analysis_id,a.filename,a.dimensions_json,a.analysis_json,a.created_at,a.status,
+                      j.job_id,j.status AS job_status,o.status AS request_status,q.status AS quote_status,
+                      q.quote_snapshot_json
+               FROM stl_analyses a
+               LEFT JOIN quotes q ON q.analysis_id=a.analysis_id
+               LEFT JOIN orders o ON o.quote_id=q.quote_id
+               LEFT JOIN print_jobs j ON j.order_id=o.order_id
+               ORDER BY a.created_at DESC,a.rowid DESC LIMIT 1"""
         ).fetchone()
     if row is None:
         return {"found": False, "message": "No STL analysis has been stored yet."}
 
-    return {
+    result = {
         "found": True,
         "analysis_id": row[0],
         "filename": row[1],
@@ -61,6 +67,16 @@ def latest(database: Path) -> dict:
         "created_at": row[4],
         "status": row[5],
     }
+    if row[6] is not None:
+        quote_snapshot = json.loads(row[10]) if row[10] else {}
+        result["request"] = {
+            "status": row[8],
+            "job_id": row[6],
+            "job_status": row[7],
+            "quote_status": row[9],
+            "quote_reason": quote_snapshot.get("reason"),
+        }
+    return result
 
 
 def get_analysis(database: Path, analysis_id: str, filename: str) -> dict:

@@ -17,6 +17,7 @@ RUN apt-get update \
 WORKDIR /opt/print-farm-operator
 
 COPY experiments/ ./experiments/
+COPY openclaw/workspace/AGENTS.md ./openclaw/workspace/AGENTS.md
 COPY openclaw/workspace/skills/ ./openclaw/workspace/skills/
 COPY openclaw/plugins/print-farm-stl/ ./openclaw/plugins/print-farm-stl/
 COPY standalone/agent_index_client.py ./standalone/agent_index_client.py

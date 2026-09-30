@@ -8,7 +8,7 @@ import { execFile, spawn } from "node:child_process";
 import { Type } from "typebox";
 import { defineToolPlugin } from "openclaw/plugin-sdk/tool-plugin";
 import { jsonResult } from "openclaw/plugin-sdk/tool-results";
-import { normalizeOpenClawInboundEvent, readTrustedOpenClawMedia, trustedMediaFilename, TrustedMediaReadError } from "./inbound-media.js";
+import { normalizeOpenClawInboundEvent, readTrustedOpenClawMedia, readWebChatStlUpload, trustedMediaFilename, TrustedMediaReadError } from "./inbound-media.js";
 import { markDuplicateInboundSession, sendClaimedIntakeReply, sendReplyForCompletedIntake, shouldSuppressDuplicateSessionReply } from "./intake-reply.js";
 import { parseBridgeResponse } from "./bridge-response.js";
 
@@ -29,6 +29,7 @@ const configSchema = Type.Object({
   quoteEngine: Type.String({ description: "Absolute path to experiments/quote-engine/quote.py." }),
   databasePath: Type.String({ description: "Absolute path to the project-local SQLite database." }),
   bridgeScript: Type.String({ description: "Absolute path to the trusted Stage 5 channel bridge." }),
+  localToolsScript: Type.Optional(Type.String({ description: "Absolute path to the authenticated local onboarding and production adapter." })),
   identityKeyFile: Type.String({ description: "Private deployment identity signing key, mode 0600." }),
   uploadSpool: Type.String({ description: "Private Stage 5 upload spool directory." }),
   pendingIntakeRoot: Type.String({ description: "Private persistent pending-intake spool directory." }),
@@ -80,6 +81,48 @@ function runBridge(config: Record<string, unknown>, payload: Record<string, unkn
       pending_intake_root: config.pendingIntakeRoot,
       private_jobs_root: config.privateJobsRoot, audience: config.identityAudience }));
   });
+}
+
+function runLocalTool(config: Record<string, unknown>, payload: Record<string, unknown>, signal?: AbortSignal): Promise<Record<string, unknown>> {
+  return new Promise((resolveResult, reject) => {
+    const python = String(config.pythonExecutable || "python3");
+    const script = String(config.localToolsScript || "");
+    if (!isAbsolute(script) || !isAbsolute(String(config.databasePath || ""))) {
+      reject(new Error("The local farm tools are not configured."));
+      return;
+    }
+    const child = spawn(python, [script], { stdio: ["pipe", "pipe", "ignore"], windowsHide: true });
+    const chunks: Buffer[] = [];
+    let total = 0;
+    const timeout = setTimeout(() => child.kill("SIGKILL"), TIMEOUT_MS);
+    const abort = () => child.kill("SIGTERM");
+    signal?.addEventListener("abort", abort, { once: true });
+    child.stdout.on("data", (chunk: Buffer) => {
+      total += chunk.length;
+      if (total > MAX_OUTPUT_BYTES) child.kill("SIGKILL");
+      else chunks.push(chunk);
+    });
+    child.on("error", (error) => { clearTimeout(timeout); reject(error); });
+    child.on("close", (code) => {
+      clearTimeout(timeout);
+      signal?.removeEventListener("abort", abort);
+      const output = Buffer.concat(chunks).toString("utf8");
+      try {
+        const result = JSON.parse(output) as Record<string, unknown>;
+        if (code !== 0) reject(new Error(String(result.error || "The farm operation was denied.")));
+        else resolveResult(result);
+      } catch {
+        reject(new Error("The local farm operation returned invalid output."));
+      }
+    });
+    child.stdin.end(JSON.stringify({ ...payload, database: config.databasePath }));
+  });
+}
+
+function localStaffTool(ctx: { messageChannel?: string; senderIsOwner?: boolean }) {
+  // A local Gateway token-backed WebChat owner is the trusted staff boundary.
+  // Public channel sessions never receive these tools in their catalog.
+  return ctx.messageChannel === "webchat" && ctx.senderIsOwner === true;
 }
 
 const pluginEntry = defineToolPlugin({
@@ -478,6 +521,80 @@ const pluginEntry = defineToolPlugin({
         };
       },
     }),
+    tool({
+      name: "farm_onboarding",
+      label: "Configure Print Farm",
+      description: "Continue or resume first-run setup. Ask the displayed question in conversation and pass the user's answer; every answer is saved immediately.",
+      parameters: Type.Object({ answer: Type.Optional(Type.String({ minLength: 1, maxLength: 500 })) }, { additionalProperties: false }),
+      factory: ({ config, toolContext }) => {
+        if (!localStaffTool(toolContext)) return null;
+        return {
+          name: "farm_onboarding",
+          label: "Configure Print Farm",
+          description: "Continue or resume persistent farm setup using the user's answer to the last question.",
+          parameters: Type.Object({ answer: Type.Optional(Type.String({ minLength: 1, maxLength: 500 })) }, { additionalProperties: false }),
+          async execute(_id: string, params: { answer?: string }, signal?: AbortSignal) {
+            return jsonResult(await runLocalTool(config as unknown as Record<string, unknown>,
+              { operation: "farm_onboarding", ...params }, signal));
+          },
+        };
+      },
+    }),
+    tool({
+      name: "get_farm_configuration",
+      label: "Get Farm Configuration",
+      description: "The authoritative read for the authenticated owner's persisted farm state. Always use this for questions about configured printers or nozzle sizes, primary slicer or material, solo/team mode, onboarding status, and the current user's roles. Do not inspect Gateway config or use shell/search/SQLite to answer these questions.",
+      parameters: Type.Object({}, { additionalProperties: false }),
+      factory: ({ config, toolContext }) => {
+        if (!localStaffTool(toolContext)) return null;
+        return {
+          name: "get_farm_configuration",
+          label: "Get Farm Configuration",
+          description: "Read persisted farm onboarding, active printers, primary slicer/material, operating mode, and current owner roles.",
+          parameters: Type.Object({}, { additionalProperties: false }),
+          async execute(_id: string, _params: Record<string, never>, signal?: AbortSignal) {
+            try {
+              return jsonResult(await runLocalTool(config as unknown as Record<string, unknown>,
+                { operation: "get_farm_configuration" }, signal));
+            } catch (error) {
+              return jsonResult({ success: false, error: error instanceof Error ? error.message : "The farm configuration could not be read." });
+            }
+          },
+        };
+      },
+    }),
+    ...(["list_ready_jobs", "inspect_production_job", "assign_printer", "start_job", "finish_job"] as const).map((name) =>
+      tool({
+        name,
+        label: name.replaceAll("_", " "),
+        description: "Use the authenticated staff production workflow backed by the local farm domain.",
+        parameters: name === "list_ready_jobs" ? Type.Object({}, { additionalProperties: false })
+          : name === "inspect_production_job" ? Type.Object({ job_id: Type.String({ minLength: 1 }) }, { additionalProperties: false })
+          : name === "assign_printer" ? Type.Object({ job_id: Type.String({ minLength: 1 }), printer_id: Type.String({ minLength: 1 }) }, { additionalProperties: false })
+          : name === "finish_job" ? Type.Object({ job_id: Type.String({ minLength: 1 }), outcome: Type.Union([Type.Literal("COMPLETED"), Type.Literal("FAILED")]), details: Type.Optional(Type.String({ maxLength: 500 })) }, { additionalProperties: false })
+          : Type.Object({ job_id: Type.String({ minLength: 1 }) }, { additionalProperties: false }),
+        factory: ({ config, toolContext }) => {
+          if (!localStaffTool(toolContext)) return null;
+          return {
+            name,
+            label: name.replaceAll("_", " "),
+            description: "Perform one authorized manual production workflow operation. Printer start and completion remain operator-confirmed.",
+            parameters: name === "list_ready_jobs" ? Type.Object({}, { additionalProperties: false })
+              : name === "inspect_production_job" ? Type.Object({ job_id: Type.String({ minLength: 1 }) }, { additionalProperties: false })
+              : name === "assign_printer" ? Type.Object({ job_id: Type.String({ minLength: 1 }), printer_id: Type.String({ minLength: 1 }) }, { additionalProperties: false })
+              : name === "finish_job" ? Type.Object({ job_id: Type.String({ minLength: 1 }), outcome: Type.Union([Type.Literal("COMPLETED"), Type.Literal("FAILED")]), details: Type.Optional(Type.String({ maxLength: 500 })) }, { additionalProperties: false })
+              : Type.Object({ job_id: Type.String({ minLength: 1 }) }, { additionalProperties: false }),
+            async execute(_id: string, params: Record<string, unknown>, signal?: AbortSignal) {
+              try {
+                return jsonResult(await runLocalTool(config as unknown as Record<string, unknown>,
+                  { operation: name, ...params }, signal));
+              } catch (error) {
+                return jsonResult({ success: false, error: error instanceof Error ? error.message : "The farm operation failed." });
+              }
+            },
+          };
+        },
+      })),
   ],
 });
 let pluginApi: Parameters<typeof pluginEntry.register>[0] | undefined;
@@ -642,6 +759,37 @@ pluginEntry.register = (api: Parameters<typeof pluginEntry.register>[0]) => {
   registerTools(api);
   api.on("message_received", async (event, context) => {
     const channel = context.channelId.trim().toLowerCase();
+    if (channel === "webchat") {
+      if (!event.media?.length && !event.originalMedia?.length) return;
+      const config = api.config.plugins?.entries?.["print-farm-stl"]?.config as Record<string, unknown>;
+      try {
+        const upload = await readWebChatStlUpload(event, {
+          channelId: context.channelId,
+          accountId: context.accountId,
+          conversationId: context.conversationId,
+          senderId: context.senderId || event.senderId,
+          messageId: context.messageId || event.messageId,
+        }, String(config.openclawMediaRoot || ""));
+        const result = await runBridge(config, {
+          operation: "submit_webchat_stl",
+          channel: upload.channel,
+          account_id: upload.account_id,
+          sender_id: upload.sender_id,
+          conversation_id: upload.conversation_id,
+          message_id: upload.message_id,
+          filename: upload.filename,
+          attachment_b64: upload.bytes.toString("base64"),
+          analyzer_script: config.analyzerScript,
+        });
+        api.logger.info(`WebChat STL intake persisted: status=${String(result.status || "unknown")} replay=${String(result.idempotent_replay === true)}.`);
+      } catch (error) {
+        const category = error instanceof TrustedMediaReadError
+          ? error.category
+          : error instanceof Error ? error.name : "UnknownError";
+        api.logger.warn(`WebChat STL attachment was not accepted: reason=${category}.`);
+      }
+      return;
+    }
     // WhatsApp is the only currently configured public customer surface.
     // The application correlation contract itself is channel-neutral.
     if (channel !== "whatsapp") return;

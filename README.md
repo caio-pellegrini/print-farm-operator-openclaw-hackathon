@@ -49,10 +49,13 @@ The clean image starts OpenClaw 2026.8.1 and builds the checked-in print-farm pl
 
 ## Demo flow
 
-1. Start the container and open the local OpenClaw interface.
-2. Ask it to analyze a sample STL and explain the estimate and quote review gates.
-3. Exercise the persistent farm APIs/tests for customer/staff identity, job status, assignment, and manually confirmed completion.
-4. Show the event history and SQLite persistence across a container restart.
+1. Start the container and open the local OpenClaw interface with its Gateway token. On first use, Print Farm Operator introduces itself and offers to configure the farm in about a minute.
+2. Answer one setup question at a time: printer count, model and nozzle per printer, solo/team operation, primary slicer and material, and whether customer messaging may be useful later. Every answer is saved immediately, so setup resumes after a restart. At completion, the agent summarizes the persisted farm and asks whether you want to send an STL.
+3. Attach one STL in WebChat. OpenClaw's managed media hook imports it into private job storage and runs the existing analyzer automatically; no folder copy is needed. The agent reports its dimensions, geometric volume, basic mesh validity, request/job state, and quote-readiness. It does not suggest a price unless the applicable slicer/profile has passed the quote trust gates. The estimate path is documented in the plugin README.
+4. For a solo owner, the initial user has both OWNER and OPERATOR roles. Use `list_ready_jobs`, inspect a job, assign one of the listed manual printers, and record the operator-confirmed start and completion.
+5. Start a new conversation, ask about the configured printers or slicer, and confirm that the persisted farm summary is still available.
+
+The local production tools are offered only in owner-authenticated WebChat. Separate operator identities still need provisioning before team members can use the tools from their own OpenClaw identity.
 
 Use sample models without customer information. The current container does not include a Docker daemon or printer slicer images. The isolated Cura and other slicer adapters expect their approved runtime images and a Docker-capable host; the one-click image is therefore a local OpenClaw/runtime release candidate, not a turnkey slicer or printer-control appliance.
 

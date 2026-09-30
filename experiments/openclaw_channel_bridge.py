@@ -13,6 +13,7 @@ import json
 import os
 import stat
 import sys
+import uuid
 from pathlib import Path
 from typing import Callable
 
@@ -107,6 +108,68 @@ def submit_verified_channel_attachment(
         "job_id": result["job_id"],
         "safe_filename": result["safe_filename"],
         "status": result["status"],
+    }
+
+
+def submit_webchat_stl_attachment(
+    database: Path,
+    spool_root: Path,
+    private_jobs_root: Path,
+    *,
+    signing_key: bytes,
+    audience: str,
+    account_id: str,
+    sender_id: str,
+    conversation_id: str,
+    message_id: str,
+    filename: str,
+    content: bytes,
+    analyzer_script: Path,
+) -> dict:
+    """Turn one trusted WebChat media event into the existing private STL request flow."""
+    values = (account_id, sender_id, conversation_id, message_id)
+    if any(not isinstance(value, str) or not value.strip() or len(value) > 1024 for value in values):
+        raise ValueError("The WebChat upload lacks trusted message context.")
+    if not isinstance(content, bytes):
+        raise ValueError("The WebChat attachment bytes are unavailable.")
+    event_key = "\0".join(("webchat", account_id, sender_id, conversation_id, message_id))
+    intake_id = f"webchat-{uuid.uuid5(uuid.NAMESPACE_URL, event_key).hex}"
+    attachment_reference = "ocw_" + hashlib.sha256(event_key.encode("utf-8")).hexdigest()
+    result = submit_public_channel_request(
+        database,
+        spool_root,
+        private_jobs_root,
+        signing_key=signing_key,
+        audience=audience,
+        channel="webchat",
+        external_account_id=account_id,
+        external_sender_id=sender_id,
+        conversation_context=conversation_id,
+        attachment_reference=attachment_reference,
+        submitted_filename=filename,
+        attachment_reader=lambda reference: content if reference == attachment_reference else b"",
+        request_summary="Analyze STL uploaded in WebChat",
+        analyzer_script=analyzer_script,
+        quantity=1,
+        is_group=False,
+        intake_id=intake_id,
+    )
+    with connect_database(database) as connection:
+        persisted = connection.execute("""SELECT a.analysis_id,a.analysis_json,q.status
+            FROM orders o JOIN quotes q ON q.quote_id=o.quote_id
+            JOIN stl_analyses a ON a.analysis_id=q.analysis_id WHERE o.intake_id=?""",
+            (intake_id,)).fetchone()
+    if persisted is None:
+        raise RuntimeError("The WebChat STL request did not persist its analysis.")
+    return {
+        "status": "created",
+        "job_id": result["job_id"],
+        "analysis_id": persisted["analysis_id"],
+        "safe_filename": result["safe_filename"],
+        "analysis": json.loads(persisted["analysis_json"]),
+        "quote_status": persisted["status"],
+        "quote_issued": False,
+        "idempotent_replay": result.get("idempotent_replay", False),
     }
 
 
@@ -476,6 +539,23 @@ def dispatch_plugin_request(payload: dict) -> dict:
     }
     database = Path(payload["database"])
     pending_root = Path(payload.get("pending_intake_root", Path(payload["spool_root"]).parent / "pending-intakes"))
+    if payload["operation"] == "submit_webchat_stl":
+        if payload.get("channel") != "webchat":
+            raise AuthorizationError("The STL attachment adapter accepts WebChat events only.")
+        encoded = payload.get("attachment_b64")
+        if not isinstance(encoded, str):
+            raise ValueError("A WebChat STL attachment is required.")
+        content = base64.b64decode(encoded, validate=True)
+        if not content or len(content) > 25 * 1024 * 1024:
+            raise ValueError("The WebChat STL must be no larger than 25 MiB.")
+        return submit_webchat_stl_attachment(
+            database, Path(payload["spool_root"]), Path(payload["private_jobs_root"]),
+            signing_key=key, audience=payload["audience"],
+            account_id=payload["account_id"], sender_id=payload["sender_id"],
+            conversation_id=payload.get("conversation_id", ""),
+            message_id=payload.get("message_id", ""), filename=payload.get("filename", ""),
+            content=content, analyzer_script=Path(payload["analyzer_script"]),
+        )
     if payload["operation"] == "ingest_event":
         if payload.get("is_group") is True:
             raise AuthorizationError("Customer intake accepts direct conversations only.")

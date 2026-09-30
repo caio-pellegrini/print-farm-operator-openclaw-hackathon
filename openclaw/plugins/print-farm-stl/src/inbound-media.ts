@@ -14,6 +14,7 @@ export type OpenClawMediaFact = {
 };
 
 export type OpenClawInboundEvent = {
+  from?: string;
   content?: string;
   messageId?: string;
   senderId?: string;
@@ -29,6 +30,16 @@ export type OpenClawInboundContext = {
   conversationId?: string;
   senderId?: string;
   messageId?: string;
+};
+
+export type WebChatStlUpload = {
+  channel: "webchat";
+  account_id: string;
+  sender_id: string;
+  conversation_id: string;
+  message_id: string;
+  filename: string;
+  bytes: Buffer;
 };
 
 export type NormalizedInboundEvent = {
@@ -134,4 +145,50 @@ export async function readTrustedOpenClawMedia(
 
 export function trustedMediaFilename(fact: OpenClawMediaFact): string {
   return basename(fact.path || "attachment.stl");
+}
+
+/** Resolve one WebChat STL only from OpenClaw's managed media facts and root. */
+export async function readWebChatStlUpload(
+  event: OpenClawInboundEvent,
+  context: OpenClawInboundContext,
+  trustedMediaRoot: string,
+): Promise<WebChatStlUpload> {
+  if (context.channelId.trim().toLowerCase() !== "webchat") {
+    throw new TrustedMediaReadError("unsupported_channel");
+  }
+  if (event.mediaStagingPending === true) {
+    throw new TrustedMediaReadError("media_staging_pending");
+  }
+  const media = event.media ?? [];
+  if (media.length !== 1) throw new TrustedMediaReadError("expected_one_attachment");
+  const item = media[0];
+  const filename = trustedMediaFilename(item);
+  if (extname(filename).toLowerCase() !== ".stl") {
+    throw new TrustedMediaReadError("unsupported_file_extension");
+  }
+  if (item.messageId && event.messageId && item.messageId !== event.messageId) {
+    throw new TrustedMediaReadError("attachment_message_mismatch");
+  }
+  const normalized = normalizeOpenClawInboundEvent({
+    ...event,
+    senderId: event.senderId || context.senderId || event.from || "authenticated-webchat-owner",
+  }, context);
+  if (!normalized?.sender_id || !normalized.conversation_id || !normalized.message_id) {
+    throw new TrustedMediaReadError("missing_trusted_message_context");
+  }
+  // OpenClaw may put non-image chat.send attachments in its session workspace.
+  // workspaceDir is a host-provided managed-media fact, not a model argument.
+  const mediaRoot = item.workspaceDir && isAbsolute(item.workspaceDir)
+    ? item.workspaceDir
+    : trustedMediaRoot;
+  const bytes = await readTrustedOpenClawMedia(item, mediaRoot);
+  return {
+    channel: "webchat",
+    account_id: normalized.account_id,
+    sender_id: normalized.sender_id,
+    conversation_id: normalized.conversation_id,
+    message_id: normalized.message_id,
+    filename,
+    bytes,
+  };
 }

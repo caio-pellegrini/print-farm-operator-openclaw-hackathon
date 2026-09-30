@@ -22,6 +22,7 @@ farm_config = {
     "quoteEngine": str(app / "experiments" / "quote-engine" / "quote.py"),
     "databasePath": str(data / "farm" / "farm.sqlite"),
     "bridgeScript": str(app / "experiments" / "openclaw_channel_bridge.py"),
+    "localToolsScript": str(app / "experiments" / "openclaw_local_tools.py"),
     "identityKeyFile": str(data / "secrets" / "identity.key"),
     "uploadSpool": str(data / "upload-spool"),
     "pendingIntakeRoot": str(data / "pending-intake"),
@@ -36,7 +37,9 @@ farm_config = {
 config = {
     "agents": {"defaults": {"workspace": str(workspace)}},
     "gateway": {"mode": "local", "bind": "lan", "port": 18789,
-                "auth": {"mode": "token"}},
+                "auth": {"mode": "token"},
+                "controlUi": {"allowedOrigins": [
+                    "http://127.0.0.1:18789", "http://localhost:18789"]}},
     "plugins": {
         "allow": ["print-farm-stl"],
         "load": {"paths": [str(plugin)]},

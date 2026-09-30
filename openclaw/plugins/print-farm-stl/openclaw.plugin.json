@@ -49,6 +49,10 @@
         "type": "string",
         "description": "Absolute path to the trusted Stage 5 channel bridge."
       },
+      "localToolsScript": {
+        "type": "string",
+        "description": "Absolute path to the authenticated local onboarding and production adapter."
+      },
       "identityKeyFile": {
         "type": "string",
         "description": "Private deployment identity signing key, mode 0600."
@@ -100,7 +104,14 @@
       "farm_get_pending_intake_status",
       "farm_send_intake_confirmation",
       "farm_resolve_pending_intake",
-      "farm_read_own_job"
+      "farm_read_own_job",
+      "farm_onboarding",
+      "get_farm_configuration",
+      "list_ready_jobs",
+      "inspect_production_job",
+      "assign_printer",
+      "start_job",
+      "finish_job"
     ]
   }
 }
